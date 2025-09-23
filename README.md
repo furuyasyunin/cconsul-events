@@ -22,3 +22,4 @@ GitHub Actionsで定期的にPlaywrightを使って学舎サイトにログイ�
 - `scraper_login.py`: ログインフォームのセレクタを調整
 - `parsers.py`: イベント一覧のDOMセレクタを調整
 - `run.yml`: スケジュールやPythonバージョンを調整
+
