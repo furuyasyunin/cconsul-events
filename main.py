@@ -61,7 +61,7 @@ def main():
     if not new_events:
         logging.info("新着なし"); return
     new_events = new_events[:MAX_POSTS]
-    message = "\n\n".join(format_event(e) for e in new_events)  # 1通にまとめて送信
+    message = "\n\n".join(format_event(e) for e in new_events)
     for tid in TARGET_IDS:
         push_message(tid, message); time.sleep(1.0)
     mark_seen(conn, new_events)

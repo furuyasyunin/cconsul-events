@@ -5,10 +5,9 @@ def parse_events_generic(html, base_url):
     soup = BeautifulSoup(html, "lxml")
     events = []
 
-    # テーブル形式（1列目:日付, 2列目:タイトル, リンクはa要素）
     for tr in soup.select("table tbody tr"):
         tds = tr.find_all("td")
-        if len(tds) < 2: 
+        if len(tds) < 2:
             continue
         date = tds[0].get_text(strip=True)
         title = tds[1].get_text(strip=True)
@@ -19,7 +18,6 @@ def parse_events_generic(html, base_url):
     if events:
         return events
 
-    # カード/リスト形式
     for el in soup.select(".events .event, .event-item, .schedule .item, li.event"):
         title_el = el.select_one(".title, h3, h4, a")
         date_el  = el.select_one(".date, time")
