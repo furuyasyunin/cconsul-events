@@ -51,5 +51,4 @@ jobs:
           DB_PATH: seen.db
           MAX_POSTS: "10"
         run: |
-          # 重要: 機密混入を避けるためデバッグ出力を最小限に
           python main.py
