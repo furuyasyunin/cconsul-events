@@ -1,0 +1,54 @@
+name: cconsul-events
+
+on:
+  schedule:
+    # JST 08:00/12:00/18:00 → UTC 23:00/03:00/09:00（平日）
+    - cron: "0 23,3,9 * * 1-5"
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    # 最小権限
+    permissions:
+      contents: read
+      # id-token: write  # ← OIDCを使う時だけ有効化
+
+    # 同時実行を抑止（前回が残っていても重複実行しない）
+    concurrency:
+      group: cconsul-events
+      cancel-in-progress: true
+
+    # 承認フローや環境Secretsを使う（公開Repoでも可）
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps
+
+      - name: Run scraper
+        env:
+          # LINE
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          TARGET_IDS: ${{ secrets.TARGET_IDS }}
+          # 学舎サイト
+          LOGIN_URL: ${{ secrets.LOGIN_URL }}
+          EVENTS_URL: ${{ secrets.EVENTS_URL }}
+          CCONSUL_ID: ${{ secrets.CCONSUL_ID }}
+          CCONSUL_PASSWORD: ${{ secrets.CCONSUL_PASSWORD }}
+          # 任意
+          USER_AGENT: Mozilla/5.0 (compatible; CConsulScraper/1.0)
+          WAIT_SELECTOR: "table, .events, .schedule, .list"
+          DB_PATH: seen.db
+          MAX_POSTS: "10"
+        run: |
+          # 重要: 機密混入を避けるためデバッグ出力を最小限に
+          python main.py
