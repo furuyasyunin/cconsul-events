@@ -49,7 +49,7 @@ def parse_events_generic(html: str, base_url: str) -> List[Dict[str, Optional[st
     # --- 3. 新しい特定のリスト形式 (.row.ttl) の解析（追加・修正部分） ---
     
     # イベントリストの要素を取得: <div class="row ttl"> の中の <ul> の中の <li>
-    for li in soup.select(".row ttl > ul > li"):
+    for li in soup.select(".row\ ttl > ul > li"):
         a_tag = li.select_one("a[href]")
         
         if not a_tag:
