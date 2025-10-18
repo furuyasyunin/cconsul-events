@@ -51,4 +51,4 @@ jobs:
           DB_PATH: seen.db
           MAX_POSTS: "10"
         run: |
-          python main.py
+          python -u main.py
