@@ -1,4 +1,11 @@
 import os
+HTML_FIXTURE = os.getenv("HTML_FIXTURE")
+
+def fetch_events_html():
+    if HTML_FIXTURE:
+        with open(HTML_FIXTURE, "r", encoding="utf-8") as f:
+            return f.read(), os.getenv("EVENTS_URL") or "https://c-consul.co.jp/mypage/shigaku/schedule/events/?word=&stdate=&eddate="
+
 from playwright.sync_api import sync_playwright
 
 LOGIN_URL  = os.getenv("LOGIN_URL")
