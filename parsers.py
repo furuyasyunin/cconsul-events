@@ -6,6 +6,8 @@ import sys
 
 def _text_after_first_br(a_tag) -> Optional[str]:
     """<a> 内の最初の <br> 以降だけをタイトルとして抽出。"""
+    print(f"--- DEBUG[A]: <a> 内 <br> をタイトルとして抽出を開始", file=sys.stderr)
+
     if not a_tag:
         return None
     parts, seen_br = [], False
@@ -18,8 +20,11 @@ def _text_after_first_br(a_tag) -> Optional[str]:
         get_text = getattr(node, "get_text", None)
         parts.append(get_text(strip=True) if get_text else str(node).strip())
     title = " ".join([p for p in parts if p])
-    return title or None
+    print(f"取得内容を出力します。", title, file=sys.stderr)
+    return title or None   
+print(f"--- DEBUG[A]: <a> 内 <br> をタイトルとして抽出を終了", file=sys.stderr)
 
+base_url = "/mypage/shigaku/schedule/events"
 def _parse_row_ttl_events(soup: BeautifulSoup, base_url: str) -> List[Dict[str, Optional[str]]]:
     """しがく『イベント』ページ専用。row.ttl を優先的に読む。"""
     print(f"--- DEBUG[A]: row.ttl 試行 base_url={base_url}", file=sys.stderr)
