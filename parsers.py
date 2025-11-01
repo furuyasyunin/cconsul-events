@@ -28,15 +28,15 @@ def _text_after_first_br(a_tag) -> Optional[str]:
 def _parse_row_ttl_events(soup: BeautifulSoup, base_url: str) -> List[Dict[str, Optional[str]]]:
     """
     しがく「イベント」タブがアクティブなページ専用。
-    - li.is-active a[href*="/schedule/events"] or テキストが「その他イベント」
+    - li.tabs-title.is-active a[href*="/schedule/events"] or テキストが「イベント」
     - その直後の <div class="row ttl"> 配下の <ul><li><a>…</a></li> を列挙
     """
     print("--- DEBUG: 専用パーサ(row.ttl)を試行中 ---", file=sys.stderr)
 
-    active = soup.select_one('li a[href*="/schedule/events"]')
+    active = soup.select_one('li.tabs-title.is-active a[href*="/schedule/events"]')
     if not active:
-        cand = soup.select_one('li a')
-        if not (cand and "その他イベント" in cand.get_text(strip=True)):
+        cand = soup.select_one('li.tabs-title.is-active a')
+        if not (cand and "イベント" in cand.get_text(strip=True)):
             print("--- DEBUG: イベントタブはアクティブではないため専用パーサをスキップ ---", file=sys.stderr)
             return []
 
