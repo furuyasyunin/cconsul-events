@@ -33,7 +33,7 @@ def _parse_row_ttl_events(soup: BeautifulSoup, base_url: str) -> List[Dict[str, 
     """
     print("--- DEBUG: 専用パーサ(row.ttl)を試行中 ---", file=sys.stderr)
 
-    active = soup.select_one('li.tabs-title.is-active a[href*="/schedule/events"]')
+    active = soup.select_one('li.is-active a[href*="/schedule/events"]')
     if not active:
         cand = soup.select_one('li.tabs-title.is-active a')
         if not (cand and "イベント" in cand.get_text(strip=True)):
