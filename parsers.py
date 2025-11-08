@@ -63,7 +63,7 @@ def parse_events_generic(html: str, base_url: str) -> List[Dict[str, Optional[st
     print("--- DEBUG: 3. 特定のリスト形式 (.row ttl) の解析を試行中 ---", file=sys.stderr)
     
     # イベントリストの要素を取得: <div class="row ttl"> の中の <ul> の中の <li>
-    li_elements = soup.select(".row\ ttl > ul > li")
+    li_elements = soup.select(".row.ttl > ul > li")
     print(f"--- DEBUG: 3. 検出された .row ttl > ul > li 要素の数: {len(li_elements)} ---", file=sys.stderr)
     
     for i, li in enumerate(li_elements):
