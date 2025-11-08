@@ -5,7 +5,7 @@ from parsers import parse_events_generic
 from scraper_login import fetch_events_html
 
 # --- 環境変数から設定値の読み込み ---
-print.info("--- 環境変数からの設定値読み込み開始 ---")
+print("--- 環境変数からの設定値読み込み開始 ---")
 # LINE Channel Access Token (メッセージ送信に必要)
 TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 # メッセージを送信するLINEのターゲットIDリスト (カンマ区切り文字列をリストに変換)
