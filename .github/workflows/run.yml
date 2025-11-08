@@ -47,7 +47,8 @@ jobs:
           CCONSUL_PASSWORD: ${{ secrets.CCONSUL_PASSWORD }}
           # 任意
           USER_AGENT: Mozilla/5.0 (compatible; CConsulScraper/1.0)
-          WAIT_SELECTOR: "table, .events, .schedule, .list"
+          WAIT_SELECTOR: "table, .events, .schedule, .list, .row.ttl"
+          #WAIT_SELECTOR: "table, .events, .schedule, .list"
           DB_PATH: seen.db
           MAX_POSTS: "10"
         run: |
