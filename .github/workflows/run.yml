@@ -2,7 +2,7 @@ name: cconsul-events
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # 5分ごと
+    - cron: "* */6 * * *"  # 6時間ごと
 
 jobs:
   run:
