@@ -17,11 +17,12 @@ from parsers import parse_events_generic
 from scraper_login import fetch_events_html
 
 # --- 環境変数から設定値の読み込み ---
+print("--- 環境変数からの設定値読み込み開始 ---")
+# LINE Channel Access Token (メッセージ送信に必要)
 TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 TARGET_IDS = [s.strip() for s in os.getenv("TARGET_IDS","").split(",") if s.strip()]
 DB_PATH = os.getenv("DB_PATH","seen.db")
 MAX_POSTS = int(os.getenv("MAX_POSTS","10"))
-
 # ★ 追加: 実行モードフラグ
 IS_DRY = os.getenv("DRY_RUN","false").lower() == "true"
 USE_FIXTURE = bool(os.getenv("HTML_FIXTURE"))
@@ -97,23 +98,23 @@ def uid_from_event(e):
     return hashlib.sha256(basis.encode("utf-8")).hexdigest()
 
 def filter_new(conn, events):
-    logging.info(f"新着イベントのフィルタリング開始: 全{len(events)}件")
+    print(f"新着イベントのフィルタリング開始: 全{len(events)}件")
     cur = conn.cursor(); out=[]
     for e in events:
         uid = uid_from_event(e)
         if cur.execute("SELECT 1 FROM seen WHERE id=?", (uid,)).fetchone():
             continue
         e["_uid"] = uid; out.append(e)
-    logging.info(f"新着イベントのフィルタリング完了: {len(out)}件抽出されました")
+    print(f"新着イベントのフィルタリング完了: {len(out)}件抽出されました")
     return out
 
 def mark_seen(conn, events):
-    logging.info(f"既読としてマークするイベント数: {len(events)}件")
+    print(f"既読としてマークするイベント数: {len(events)}件")
     cur = conn.cursor()
     for e in events:
         cur.execute("INSERT OR IGNORE INTO seen(id) VALUES(?)", (e["_uid"],))
     conn.commit()
-    logging.info("既読イベントのデータベース登録完了 (コミット済み)")
+    print("既読イベントのデータベース登録完了 (コミット済み)")
 
 # --- LINE通知関連の関数 ---
 def push_message(to_id, text):
@@ -139,14 +140,13 @@ def push_message(to_id, text):
         r.raise_for_status()
         return
 
-    # ★ 本番送信用（従来どおり）
     url = "https://api.line.me/v2/bot/message/push"
     headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type":"application/json"}
     body = {"to": to_id, "messages":[{"type":"text","text":text[:4900]}]}
     r = requests.post(url, headers=headers, json=body, timeout=20)
     logging.info(f"LINE API応答ステータス: {r.status_code}")
     r.raise_for_status()
-    logging.info(f"LINEメッセージ送信成功 (To: {to_id})")
+    print(f"LINEメッセージ送信成功 (To: {to_id})")
 
 # ★ 追加: 実行モードに応じた必須ENVチェック
 def _require_runtime_env():
@@ -184,41 +184,41 @@ if USE_B_SAMPLE and not SEND_B_SAMPLE:
 
 # --- メイン処理 ---
 def main():
-    logging.info("=== スクリプト処理開始 ===")
-    _require_runtime_env()
-
-    # 1. HTML取得 or Bサンプル使用
-    if USE_B_SAMPLE and SEND_B_SAMPLE:
-        logging.info("1. Bサンプルイベントを使用（取得/解析をスキップ）")
-        events = B_SAMPLE_EVENTS
-        final_url = "https://example.com/mypage/shigaku/schedule/events/"
-    else:
-        logging.info("1. HTMLコンテンツの取得開始...")
-        html, final_url = fetch_events_html()
-        logging.info(f"1. HTMLコンテンツの取得完了。最終URL: {final_url}")
-
-        # 2. 解析
-        logging.info("2. 取得したHTMLからのイベント情報解析開始...")
-        events = parse_events_generic(html, final_url)
-        logging.info(f"2. イベント情報解析完了。見つかったイベント数: {len(events)}件")
-        if not events:
-            logging.warning("イベントが見つかりません。parsers.py のセレクタ調整が必要です。")
-            logging.info("=== スクリプト処理終了 (警告あり) ===")
-            return
-
-    # 3. DB接続（DRYでも新着ロジックは見たいなら接続する）
-    logging.info("3. データベース接続確立処理へ...")
+    print("=== スクリプト処理開始 ===")
+    
+    # 環境変数 (TOKENとTARGET_IDS) が設定されているかチェック
+    if not (TOKEN and TARGET_IDS):
+        print("環境変数 LINE_CHANNEL_ACCESS_TOKEN / TARGET_IDS が未設定です。")
+        raise SystemExit("環境変数 LINE_CHANNEL_ACCESS_TOKEN / TARGET_IDS が未設定です。")
+    
+    # 1. イベント情報を含むHTMLを取得
+    print("1. HTMLコンテンツの取得開始...")
+    html, final_url = fetch_events_html()
+    print(f"1. HTMLコンテンツの取得完了。最終URL: {final_url}")
+    
+    # 2. 取得したHTMLからイベント情報を解析し、イベントリストを取得
+    print("2. 取得したHTMLからのイベント情報解析開始...")
+    events = parse_events_generic(html, final_url)
+    print(f"2. イベント情報解析完了。見つかったイベント数: {len(events)}件")
+    
+    # イベントが一つも見つからなかった場合の処理
+    if not events:
+        print("イベントが見つかりません。parsers.py のセレクタ調整が必要です。")
+        print("=== スクリプト処理終了 (警告あり) ===")
+        return
+    
+    # 3. データベースへの接続を確立
+    print("3. データベース接続確立処理へ...")
     conn = ensure_db()
-
-    # 4. 新着抽出
-    logging.info("4. 新着イベントのフィルタリング処理へ...")
+    
+    # 4. 取得したイベントリストから、データベースに未登録の「新着」イベントを抽出
+    print("4. 新着イベントのフィルタリング処理へ...")
     new_events = filter_new(conn, events)
 
     if not new_events:
-        logging.info("新着イベントなし。通知スキップ。")
-        logging.info("=== スクリプト処理終了 (新着なし) ===")
+        print("新着イベントなし。通知スキップ。")
+        print("=== スクリプト処理終了 (新着なし) ===")
         return
-
     logging.info(f"新着イベント数: {len(new_events)}件")
 
     # 5. 件数制限
