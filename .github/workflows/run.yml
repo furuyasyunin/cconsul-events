@@ -2,7 +2,7 @@ name: cconsul-events
 
 on:
   schedule:
-    - cron: "0 3 * * 0"   # 毎週日曜12時(JST)
+    - cron: "*/5 * * * *"   # 毎週日曜12時(JST) テスト(5分刻み)
   workflow_dispatch:
 
 
