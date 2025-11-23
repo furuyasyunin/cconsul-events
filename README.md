@@ -1,4 +1,4 @@
-# C-Consul 学舎 イベント通知
+# しがくイベント通知
 
 GitHub Actionsで定期的にPlaywrightを使って学舎サイトにログインし、
 イベント一覧をスクレイピングしてLINEに通知します。
