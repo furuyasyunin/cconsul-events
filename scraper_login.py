@@ -25,7 +25,7 @@ def fetch_events_html():
     print("Playwrightを起動します...")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        print("ブラウザ (Chromium, headless=True) を起動しました。")
+        print("ブラウザを起動しました。")
         ctx = browser.new_context(user_agent=USER_AGENT)
         page = ctx.new_page()
         print(f"新しいページコンテキストを作成しました (User-Agent: {USER_AGENT})。")
@@ -42,7 +42,7 @@ def fetch_events_html():
 
         # 3. ログイン処理
         print("--- ログイン情報の入力開始 ---")
-        user_fields = ['input[name="username"]','input[name="loginId"]','#username','input[type="email"]']
+        user_fields = ['input[name="username"]','input[name="loginId"]','#username','#login_id','input[type="email"]']
         pass_fields = ['input[name="password"]','#password','input[type="password"]']
         submit_btns = ['button[type="submit"]','input[type="submit"]','.btn-login','button:has-text("ログイン")']
 
