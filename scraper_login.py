@@ -9,6 +9,7 @@ USER       = os.getenv("CCONSUL_ID")
 PASS       = os.getenv("CCCONSUL_PASSWORD") or os.getenv("CCONSUL_PASSWORD")  # 互換
 USER_AGENT = os.getenv("USER_AGENT", "Mozilla/5.0 (compatible; CConsulScraper/1.0)")
 WAIT_SELECTOR = os.getenv("WAIT_SELECTOR", "table, .events, .schedule, .list")
+HTML_FIXTURE = os.getenv("HTML_FIXTURE")
 
 print(f"LOGIN_URL: {LOGIN_URL}")
 print(f"EVENTS_URL: {EVENTS_URL}")
