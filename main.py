@@ -59,11 +59,26 @@ def format_event(e: dict) -> str:
     if link: body += f"\n  └ {link}"
     return body
 
-def render_message(events: list[dict]) -> str:
-    parts = [format_event(e) for e in events]
-    if SHOW_HEADER:
-        return f"{HEADER_TITLE}\n{SEPARATOR.join(parts)}"
-    return SEPARATOR.join(parts)
+def render_message(events):
+    from datetime import datetime
+    today = datetime.now().strftime("%m/%d時点")
+    
+    lines = []
+    lines.append(f"🎓 しがくイベント 新着（{today}）")
+
+    for e in events:
+        title = e.get("title","")
+        date = e.get("date","")
+        link = e.get("link","")
+
+        lines.append(f"● {title}")
+        if date:
+            lines.append(f"└ 日付: {date}")
+        if link:
+            lines.append(f"└ {link}")
+        lines.append("")  # 空行で区切り
+
+    return "\n".join(lines).strip()
 # ---------- Bさん: 通知整形ここまで ----------
 
 # --- データベース関連の関数 ---
@@ -153,7 +168,7 @@ USE_B_SAMPLE = os.getenv("B_FORMAT_SAMPLE", "false").lower() == "true"    # サ�
 SEND_B_SAMPLE = os.getenv("B_SEND_SAMPLE", "false").lower() == "true"     # 実際に送るか？（DRY_RUNに従う）
 
 B_SAMPLE_EVENTS = [
-    {"title": "模試申込開始", "date": "2025/11/05（日）10:00", "link": "https://example.com/123"},
+    {"title": "帯試験申込開始", "date": "2025/11/07（日）10:00", "link": "https://example.com/123"},
     {"title": "しがくセミナー（東京）", "date": "2025/11/10（月）19:30", "link": "https://example.com/124"},
     {"title": "冬期講習受付スタート", "date": "2025/11/20（水）", "link": "https://example.com/125"},
 ]
