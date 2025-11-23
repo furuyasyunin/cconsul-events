@@ -6,7 +6,7 @@ print("--- 環境変数の設定確認 ---")
 LOGIN_URL  = os.getenv("LOGIN_URL")
 EVENTS_URL = os.getenv("EVENTS_URL")
 USER       = os.getenv("CCONSUL_ID")
-PASS       = os.getenv("CCONSUL_PASSWORD")
+PASS       = os.getenv("CCCONSUL_PASSWORD") or os.getenv("CCONSUL_PASSWORD")  # 互換
 USER_AGENT = os.getenv("USER_AGENT", "Mozilla/5.0 (compatible; CConsulScraper/1.0)")
 WAIT_SELECTOR = os.getenv("WAIT_SELECTOR", "table, .events, .schedule, .list")
 
@@ -18,6 +18,14 @@ print(f"WAIT_SELECTOR: {WAIT_SELECTOR}")
 print("--------------------------")
 
 def fetch_events_html():
+    # ★ 追加: フィクスチャ指定時はログインせずにローカルHTMLを返す
+    if HTML_FIXTURE:
+        with open(HTML_FIXTURE, "r", encoding="utf-8") as f:
+            html = f.read()
+        final_url = EVENTS_URL or "https://example.com/mypage/shigaku/schedule/events/"
+        return html, final_url
+
+    # （本番・検証用）従来どおりログインして取得
     if not all([LOGIN_URL, EVENTS_URL, USER, PASS]):
         print("エラー: 必要な環境変数が設定されていません。")
         raise RuntimeError("環境変数 LOGIN_URL / EVENTS_URL / CCONSUL_ID / CCONSUL_PASSWORD を設定してください。")
