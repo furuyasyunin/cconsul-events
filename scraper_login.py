@@ -84,7 +84,7 @@ def fetch_events_html():
             print(f"ログイン後のページ読み込み完了。現在のURL: {page.url}")
         except Exception as e:
             print(f"エラー: ログイン後のページ読み込み中にタイムアウトまたはエラーが発生しました: {e}")
-            # ログイン失敗の可能性
+            # ログイ失敗の可能性
             # browser.close()
             # raise
 
@@ -124,6 +124,7 @@ def fetch_events_html():
         
         print(f"最終的なURL: {final_url}")
         print(f"取得したHTMLの長さ: {len(html)} 文字")
+        print(f"取得したHTML: {html} 文字")
         
         browser.close()
         print("ブラウザを閉じました。処理を終了します。")
