@@ -121,7 +121,6 @@ def push_message(to_id, text):
     # ★ 追加: DRY_RUN のときは送信せずプレビュー出力
     if IS_DRY:
         logging.info(f"[DRY_RUN] to={to_id}\n---\n{text}\n---")
-        # Step Summary にも出す（Actions実行時の見やすさ向上）
         try:
             with open(os.getenv("GITHUB_STEP_SUMMARY",""), "a", encoding="utf-8") as f:
                 f.write("## 通知メッセージ プレビュー\n\n")
@@ -130,21 +129,24 @@ def push_message(to_id, text):
             pass
         return
 
-    # ★ 検証モード（メッセージ検証APIを使う、※必要なら使用）
+    # ★ 検証モード（validate API）
     if VALIDATE_ONLY:
         url = "https://api.line.me/v2/bot/message/validate/push"
         headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type":"application/json"}
-        body = {"to": (to_id or "U_dummy"), "messages":[{"type":"text","text":text[:4900]}]}
+        body = {"to": (to_id or "U_dummy"), "messages":[{"type":"text","text": text[:4900]}]}
         r = requests.post(url, headers=headers, json=body, timeout=20)
         logging.info(f"LINE validate API応答ステータス: {r.status_code}")
+        logging.info(f"LINE validate API応答ボディ: {r.text}")
         r.raise_for_status()
         return
 
+    # ★ 本番 push
     url = "https://api.line.me/v2/bot/message/push"
-    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type":"application/json"}
-    body = {"to": to_id, "messages":[{"type":"text","text":text[:4900]}]}
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    body = {"to": to_id, "messages":[{"type": "text", "text": text[:4900]}]}
     r = requests.post(url, headers=headers, json=body, timeout=20)
     logging.info(f"LINE API応答ステータス: {r.status_code}")
+    logging.info(f"LINE API応答ボディ: {r.text}")   # ★ ここを追加
     r.raise_for_status()
     print(f"LINEメッセージ送信成功 (To: {to_id})")
 
