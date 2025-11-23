@@ -148,25 +148,48 @@ def _require_runtime_env():
     if not (TOKEN and TARGET_IDS):
         raise SystemExit("環境変数 LINE_CHANNEL_ACCESS_TOKEN / TARGET_IDS が未設定です。")
 
+    # ★ B専用デバッグモード（Aが未完でも整形確認できる）
+USE_B_SAMPLE = os.getenv("B_FORMAT_SAMPLE", "false").lower() == "true"    # サンプルで整形/送信する
+SEND_B_SAMPLE = os.getenv("B_SEND_SAMPLE", "false").lower() == "true"     # 実際に送るか？（DRY_RUNに従う）
+
+B_SAMPLE_EVENTS = [
+    {"title": "模試申込開始", "date": "2025/11/05（日）10:00", "link": "https://example.com/123"},
+    {"title": "しがくセミナー（東京）", "date": "2025/11/10（月）19:30", "link": "https://example.com/124"},
+    {"title": "冬期講習受付スタート", "date": "2025/11/20（水）", "link": "https://example.com/125"},
+]
+
+if USE_B_SAMPLE and not SEND_B_SAMPLE:
+    # 整形プレビューだけ（従来と同じ）
+    logging.info("=== Bデバッグモード: 仮イベント（プレビューのみ・送信しない） ===")
+    message = render_message(B_SAMPLE_EVENTS)
+    print("\n===== 整形プレビュー =====\n")
+    print(message)
+    print("\n===== ↑この内容がLINE本文になります（DRY_RUN無関係）=====\n")
+    raise SystemExit(0)
+
 # --- メイン処理 ---
 def main():
     logging.info("=== スクリプト処理開始 ===")
     _require_runtime_env()
 
-    # 1. イベント情報を含むHTMLを取得（HTML_FIXTURE指定時はログイン不要）
-    logging.info("1. HTMLコンテンツの取得開始...")
-    html, final_url = fetch_events_html()
-    logging.info(f"1. HTMLコンテンツの取得完了。最終URL: {final_url}")
+    # 1. HTML取得 or Bサンプル使用
+    if USE_B_SAMPLE and SEND_B_SAMPLE:
+        logging.info("1. Bサンプルイベントを使用（取得/解析をスキップ）")
+        events = B_SAMPLE_EVENTS
+        final_url = "https://example.com/mypage/shigaku/schedule/events/"
+    else:
+        logging.info("1. HTMLコンテンツの取得開始...")
+        html, final_url = fetch_events_html()
+        logging.info(f"1. HTMLコンテンツの取得完了。最終URL: {final_url}")
 
-    # 2. HTMLからイベント解析
-    logging.info("2. 取得したHTMLからのイベント情報解析開始...")
-    events = parse_events_generic(html, final_url)
-    logging.info(f"2. イベント情報解析完了。見つかったイベント数: {len(events)}件")
-
-    if not events:
-        logging.warning("イベントが見つかりません。parsers.py のセレクタ調整が必要です。")
-        logging.info("=== スクリプト処理終了 (警告あり) ===")
-        return
+        # 2. 解析
+        logging.info("2. 取得したHTMLからのイベント情報解析開始...")
+        events = parse_events_generic(html, final_url)
+        logging.info(f"2. イベント情報解析完了。見つかったイベント数: {len(events)}件")
+        if not events:
+            logging.warning("イベントが見つかりません。parsers.py のセレクタ調整が必要です。")
+            logging.info("=== スクリプト処理終了 (警告あり) ===")
+            return
 
     # 3. DB接続（DRYでも新着ロジックは見たいなら接続する）
     logging.info("3. データベース接続確立処理へ...")
